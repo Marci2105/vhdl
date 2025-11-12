@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Wed Nov 12 21:04:52 2025
+# Process ID         : 17832
+# Current directory  : C:/Users/julia/DHBW/FPGA/Programmentwurf_VGA_exp_1/Programmentwurf_VGA_exp_1.runs/synth_1
+# Command line       : vivado.exe -log VGA_Ansteuerung_CLK.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source VGA_Ansteuerung_CLK.tcl
+# Log file           : C:/Users/julia/DHBW/FPGA/Programmentwurf_VGA_exp_1/Programmentwurf_VGA_exp_1.runs/synth_1/VGA_Ansteuerung_CLK.vds
+# Journal file       : C:/Users/julia/DHBW/FPGA/Programmentwurf_VGA_exp_1/Programmentwurf_VGA_exp_1.runs/synth_1\vivado.jou
+# Running On         : Julians_LG_Gram
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26100
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-1360P
+# CPU Frequency      : 2611 MHz
+# CPU Physical cores : 12
+# CPU Logical cores  : 16
+# Host memory        : 16847 MB
+# Swap memory        : 1476 MB
+# Total Virtual      : 18323 MB
+# Available Virtual  : 6042 MB
+#-----------------------------------------------------------
+source VGA_Ansteuerung_CLK.tcl -notrace
