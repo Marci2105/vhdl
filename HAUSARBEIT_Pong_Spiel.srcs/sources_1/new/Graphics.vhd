@@ -72,7 +72,7 @@ begin
     -- Prozess zum Zählen der horizontalen Position
     Horizontal_Position_Counter : process(CLK_25_125MHz)
     begin 
-        if (rising_edge(CLK_25_125MHz)) then
+        if (rising_edge(CLK_25_125MHz) AND clock_enable = '1') then
             if (hPos = SCREEN_WIDTH + FRONT_PORCH_HORIZONTAL + BACK_PORCH_HORIZONTAL + SYNC_WIDTH -1) then
                 hPos <= 0;
             else
@@ -84,7 +84,7 @@ begin
     -- Prozess zum Zählen der vertikalen Position
     Vertical_Position_Counter : process(CLK_25_125MHz)
     begin
-        if (rising_edge(CLK_25_125MHz)) then
+        if (rising_edge(CLK_25_125MHz) AND clock_enable = '1') then
             if (hPos = SCREEN_WIDTH + FRONT_PORCH_HORIZONTAL + BACK_PORCH_HORIZONTAL + SYNC_WIDTH -1) then
                 if (vPos = SCREEN_HEIGHT + FRONT_PORCH_VERTICAL + BACK_PORCH_VERTICAL + SYNC_HEIGHT -1) then
                     vPos <= 0;
@@ -98,7 +98,7 @@ begin
     -- Prozess für die horizontale Synchronisation
     Horizontal_Synchronistation : process(CLK_25_125MHz, hPos)
     begin
-        if (rising_edge(CLK_25_125MHz)) then
+        if (rising_edge(CLK_25_125MHz) AND clock_enable = '1') then
             if ((hPos <= SCREEN_WIDTH + FRONT_PORCH_HORIZONTAL) OR (hPos > SCREEN_WIDTH + FRONT_PORCH_HORIZONTAL + SYNC_WIDTH)) then
                 HSYNC <= '1';
             else
@@ -110,7 +110,7 @@ begin
     -- Prozess für die vertikale Synchronisation
     Vertical_Synchronisation : process(CLK_25_125MHz, vPos)
     begin
-        if (rising_edge(CLK_25_125MHz)) then
+        if (rising_edge(CLK_25_125MHz) AND clock_enable = '1') then
             if ((vPos <= SCREEN_HEIGHT + FRONT_PORCH_VERTICAL) OR (vPos > SCREEN_HEIGHT + FRONT_PORCH_VERTICAL + SYNC_HEIGHT)) then
                 VSYNC <= '1';
             else
