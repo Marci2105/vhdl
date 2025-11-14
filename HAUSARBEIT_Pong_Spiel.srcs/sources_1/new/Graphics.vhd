@@ -35,9 +35,10 @@ use IEEE.NUMERIC_STD.ALL;
 entity Graphics is
     Port ( Ball_x : in integer;
            Ball_y : in integer;
-           Plate1 : in integer;
-           Plate2 : in integer;
+           Plate_1 : in integer;
+           Plate_2 : in integer;
            CLK_25_125MHz : in STD_LOGIC;
+           clock_enable : in STD_LOGIC;
            Score : in STD_LOGIC_VECTOR (13 downto 0);
            MenuSlct : in STD_LOGIC_VECTOR (1 downto 0);
            HSYNC : out STD_LOGIC;

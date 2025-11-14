@@ -35,6 +35,7 @@ use IEEE.NUMERIC_STD.ALL;
 -- Externe Anschlüsse an das System
 entity pong_top is
     Port ( btn : in STD_LOGIC_VECTOR (3 downto 0);
+           ck_rst: in STD_LOGIC;
            CLK100MHZ : in STD_LOGIC;
            CLK12MHZ : in STD_LOGIC;
            HSYNC : out STD_LOGIC;
@@ -51,6 +52,7 @@ component Physics
     port(
         BTNs : in std_logic_vector (3 downto 0);
         CLK_25_125MHz : in std_logic;
+        clock_enable : in std_logic;
         ScoreUpt : out std_logic_vector (1 downto 0);
         GameActv : out std_logic;
         BtnPress : out std_logic;
@@ -72,6 +74,7 @@ end component;
 component Graphics
     port(
         CLK_25_125MHz : in std_logic;
+        clock_enable : in std_logic;
         Score : in std_logic_vector (13 downto 0);
         MenuSlct : in std_logic_vector (1 downto 0);
         Ball_x : in integer;
@@ -87,9 +90,10 @@ end component;
 
 component clk_wiz_0
     port(
-    CLK_IN1 : in std_logic;
-    CLK_IN2 : in std_logic;
-    CLK_OUT1 : out std_logic);
+        CLK_IN1 : in std_logic;
+        RESET : in std_logic;
+        CLK_OUT1 : out std_logic;
+        LOCKED : out std_logic);
 end component;
 
 -- Deklaration der innenliegenden Signale zum Verbinden der Module
@@ -99,6 +103,7 @@ signal internal_score : std_logic_vector (13 downto 0);
 signal internal_game_active : std_logic;
 signal internal_button_pressed : std_logic;
 signal internal_menu_select : std_logic_vector (1 downto 0);
+signal system_enable_clock : std_logic;
 signal internal_ball_x : integer;
 signal internal_ball_y : integer;
 signal internal_plate1 : integer;
@@ -110,6 +115,7 @@ begin
    port map(
        BTNs => btn,
        CLK_25_125MHz => internal_25_125MHz,
+       clock_enable => system_enable_clock,
        ScoreUpt => internal_scoreUpt,
        GameActv => internal_game_active,
        BtnPress => internal_button_pressed,
@@ -126,6 +132,7 @@ begin
        Plate_1 => internal_plate1,
        Plate_2 => internal_plate2,
        CLK_25_125MHz => internal_25_125MHz,
+       clock_enable => system_enable_clock,
        Score => internal_score,
        MenuSlct => internal_menu_select,
        VSYNC => VSYNC,
@@ -145,8 +152,9 @@ begin
    -- Instanziierung und Verdratung der clk_wiz
    U4_CLK_WIZ_0 : clk_wiz_0
    port map(
-   CLK_IN1 => CLK100MHZ,
-   CLK_IN2 => CLK12MHZ,
-   CLK_OUT1 => internal_25_125MHz);
+       CLK_IN1 => CLK100MHZ,
+       CLK_OUT1 => internal_25_125MHz,
+       RESET => ck_rst,
+       LOCKED => system_enable_clock);
    
 end Structural;

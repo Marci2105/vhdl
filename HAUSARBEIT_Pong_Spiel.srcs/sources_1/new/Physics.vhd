@@ -33,15 +33,16 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Physics is
-    Port ( btn : in STD_LOGIC_VECTOR (3 downto 0);
+    Port ( BTNs : in STD_LOGIC_VECTOR (3 downto 0);
            CLK_25_125MHz : in STD_LOGIC;
+           clock_enable : in STD_LOGIC;
            ScoreUpt : out STD_LOGIC_VECTOR (1 downto 0);
            BtnPress : out STD_LOGIC;
            GameActv : out STD_LOGIC;
            Ball_x : out integer;
            Ball_y : out integer;
-           Plate1 : out integer;
-           Plate2 : out integer);
+           Plate_1 : out integer;
+           Plate_2 : out integer);
 end Physics;
 
 architecture Behavioral of Physics is
