@@ -35,7 +35,7 @@ use IEEE.NUMERIC_STD.ALL;
 -- Externe Anschlüsse an das System
 entity pong_top is
     Port ( btn : in STD_LOGIC_VECTOR (3 downto 0);
-           ck_rst: in STD_LOGIC;
+           --ck_rst: in STD_LOGIC;
            CLK100MHZ : in STD_LOGIC;
            CLK12MHZ : in STD_LOGIC;
            HSYNC : out STD_LOGIC;
@@ -51,15 +51,16 @@ architecture Structural of pong_top is
 component Physics
     port(
         BTNs : in std_logic_vector (3 downto 0);
-        CLK_25_125MHz : in std_logic;
-        clock_enable : in std_logic;
+        CLK_25_175MHz : in std_logic;
+        --clock_enable : in std_logic;
         ScoreUpt : out std_logic_vector (1 downto 0);
         GameActv : out std_logic;
         BtnPress : out std_logic;
         Ball_x : out integer;
         Ball_y : out integer;
         Plate_1: out integer;
-        Plate_2: out integer);
+        Plate_2: out integer;
+        Curr_State: out integer);
 end component;
 
 component Scoreboard
@@ -73,14 +74,15 @@ end component;
 
 component Graphics
     port(
-        CLK_25_125MHz : in std_logic;
-        clock_enable : in std_logic;
+        CLK_25_175MHz : in std_logic;
+        --clock_enable : in std_logic;
         Score : in std_logic_vector (13 downto 0);
         MenuSlct : in std_logic_vector (1 downto 0);
         Ball_x : in integer;
         Ball_y : in integer;
         Plate_1 : in integer;
         Plate_2 : in integer;
+        Current_State: in integer;
         HSYNC : out std_logic;
         VSYNC : out std_logic;
         RED : out STD_LOGIC_VECTOR (3 downto 0);
@@ -88,41 +90,43 @@ component Graphics
         BLUE : out STD_LOGIC_VECTOR (3 downto 0));
 end component;
 
-component clk_wiz_0
+component clk_wiz_1
     port(
         CLK_IN1 : in std_logic;
-        RESET : in std_logic;
-        CLK_OUT1 : out std_logic;
-        LOCKED : out std_logic);
+        --RESET : in std_logic;
+        CLK_OUT1 : out std_logic);
+        --LOCKED : out std_logic);
 end component;
 
 -- Deklaration der innenliegenden Signale zum Verbinden der Module
-signal internal_25_125MHz : std_logic;
+signal internal_25_175MHz : std_logic;
 signal internal_scoreUpt : std_logic_vector (1 downto 0);
 signal internal_score : std_logic_vector (13 downto 0);
 signal internal_game_active : std_logic;
 signal internal_button_pressed : std_logic;
 signal internal_menu_select : std_logic_vector (1 downto 0);
-signal system_enable_clock : std_logic;
+--signal system_enable_clock : std_logic;
 signal internal_ball_x : integer;
 signal internal_ball_y : integer;
 signal internal_plate1 : integer;
 signal internal_plate2 : integer;
+signal internal_Current_State: integer;
 
 begin
    -- Instanziierung und Verdrahtung der Physik
    U1_Physics : Physics
    port map(
        BTNs => btn,
-       CLK_25_125MHz => internal_25_125MHz,
-       clock_enable => system_enable_clock,
+       CLK_25_175MHz => internal_25_175MHz,
+       --clock_enable => system_enable_clock,
        ScoreUpt => internal_scoreUpt,
        GameActv => internal_game_active,
        BtnPress => internal_button_pressed,
        Ball_x => internal_ball_x,
        Ball_y => internal_ball_y,
        Plate_1 => internal_plate1,
-       Plate_2 => internal_plate2);
+       Plate_2 => internal_plate2,
+       Curr_State => internal_Current_State);
    
    -- Instanziierung und Verdrahtung der Grafik
    U2_Graphics : Graphics
@@ -131,8 +135,9 @@ begin
        Ball_y => internal_ball_y,
        Plate_1 => internal_plate1,
        Plate_2 => internal_plate2,
-       CLK_25_125MHz => internal_25_125MHz,
-       clock_enable => system_enable_clock,
+       Current_State => internal_Current_State,
+       CLK_25_175MHz => internal_25_175MHz,
+       --clock_enable => system_enable_clock,
        Score => internal_score,
        MenuSlct => internal_menu_select,
        VSYNC => VSYNC,
@@ -150,11 +155,12 @@ begin
        BtnPress => internal_button_pressed);
    
    -- Instanziierung und Verdratung der clk_wiz
-   U4_CLK_WIZ_0 : clk_wiz_0
+   U4_CLK_WIZ_0 : clk_wiz_1
    port map(
        CLK_IN1 => CLK100MHZ,
-       CLK_OUT1 => internal_25_125MHz,
-       RESET => ck_rst,
-       LOCKED => system_enable_clock);
+       CLK_OUT1 => internal_25_175MHz);
+       --RESET => ck_rst,
+       --LOCKED => system_enable_clock);
    
 end Structural;
+
