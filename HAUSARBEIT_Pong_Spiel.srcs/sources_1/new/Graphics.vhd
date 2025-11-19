@@ -39,9 +39,9 @@ entity Graphics is
            Plate_2 : in integer;
            Current_State: in integer;
            CLK_25_175MHz : in STD_LOGIC;
-           --clock_enable : in STD_LOGIC;
            Score : in STD_LOGIC_VECTOR (13 downto 0);
            MenuSlct : in STD_LOGIC_VECTOR (1 downto 0);
+           refresh_rate : out STD_LOGIC;
            HSYNC : out STD_LOGIC;
            VSYNC : out STD_LOGIC;
            red : out STD_LOGIC_VECTOR (3 downto 0);
@@ -64,6 +64,7 @@ architecture Behavioral of Graphics is
     constant FRONT_PORCH_VERTICAL : integer := 10;
     constant BACK_PORCH_HORIZONTAL : integer := 48;
     constant BACK_PORCH_VERTICAL : integer := 33;
+    constant RADIUS : integer := 2; 
     
     -- Signale für die Grafikdarstellung
     signal hPos : integer := 0;
@@ -74,6 +75,7 @@ architecture Behavioral of Graphics is
     signal red_i   : std_logic_vector(3 downto 0) := (others => '0');
     signal green_i : std_logic_vector(3 downto 0) := (others => '0');
     signal blue_i  : std_logic_vector(3 downto 0) := (others => '0');
+    signal signal_vsync : std_logic := '0';
 
     
 begin
@@ -134,11 +136,13 @@ begin
     begin
         if (rising_edge(CLK_25_175MHz)) then
             if ((vPos <= SCREEN_HEIGHT + FRONT_PORCH_VERTICAL) OR (vPos > SCREEN_HEIGHT + FRONT_PORCH_VERTICAL + SYNC_HEIGHT)) then
-                VSYNC <= '1';
+                signal_vsync <= '1';
             else
-                VSYNC <= '0';
+                signal_vsync <= '0';
             end if;
         end if;
+        refresh_rate <= signal_vsync;
+        VSYNC <= signal_vsync;
     end process;
  
  
@@ -319,8 +323,10 @@ begin
                             red_i <= "1111";
                             green_i <= "1111";
                             blue_i <= "1111";
-                        elsif (hPos >= Ball_x and hPos <= Ball_x+4) and
-                              (vPos >= Ball_y and vPos <= Ball_y+4) then
+                            
+                        -- Ball
+                        elsif ((hPos >= (Ball_x - RADIUS)) and (hPos <= (Ball_x + RADIUS)) and
+                              (vPos >= (Ball_y - RADIUS) and vPos <= (Ball_y + RADIUS))) then
                             red_i <= "1111";
                             green_i <= "1111";
                             blue_i <= "1111";    
@@ -344,4 +350,5 @@ RED <= red_i;
 GREEN <= green_i;
 BLUE <= blue_i;   
 end Behavioral;
+
 
