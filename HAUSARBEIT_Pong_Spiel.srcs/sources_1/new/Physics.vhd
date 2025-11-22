@@ -43,13 +43,10 @@ entity Physics is
            Ball_y : out integer;
            Plate_1 : out integer;
            Plate_2 : out integer);
+           -- ball_velocity : out integer);
 end Physics;
 
 architecture Behavioral of Physics is
-
-    -- Signale für die weitere Verarbeitung
-    signal ball_mvmt_vector : std_logic_vector (1 downto 0) := (others => '1');
-    --signal ball_velo_vector : unsigned (3 downto 0);
     
     -- Konstanten für die weitere Berechnung
     constant SCREEN_HEIGHT : integer := 480;
@@ -57,11 +54,16 @@ architecture Behavioral of Physics is
     constant PLATE_HEIGHT : integer := 75;
     constant PLATE_WIDTH : integer := 10;
     constant BALL_RAD : integer := 2;
-    constant VER_MAX_BAR: integer := SCREEN_HEIGHT - PLATE_HEIGHT;
-    constant VER_MIN_BAR: integer := 0;
-    constant MIDDLE_HOR: integer := 320;
-    constant MIDDLE_VER: integer := 240;
-    
+    constant VER_MAX_BAR : integer := SCREEN_HEIGHT - PLATE_HEIGHT;
+    constant VER_MIN_BAR : integer := 0;
+    constant MIDDLE_HOR : integer := 320;
+    constant MIDDLE_VER : integer := 240;
+    constant ACC_CONTACTS : integer := 3; -- Ballkontakte, bis dieser schneller wird
+
+    -- Signale für die weitere Verarbeitung
+    signal ball_mvmt_vector : std_logic_vector (1 downto 0) := (others => '1');
+    signal ball_velo : integer := 1;
+    signal bounce_cnt : integer := 0;    
     signal ball_pos_x  : integer := 320;  -- Ballposition x
     signal ball_pos_y : integer := 240; -- Ballposition y
     signal x_offset_left : integer range 0 to 419 := 0;  -- horizontale Verschiebung (Bezugspunkt oben links)
@@ -166,6 +168,7 @@ ball_movement : process(CLK_25_175MHz)
                 else
                     ball_mvmt_vector(0) <= '1';
                 end if;
+                bounce_cnt <= bounce_cnt + 1;
             end if;
 
             -- rechtes Padle
@@ -179,21 +182,23 @@ ball_movement : process(CLK_25_175MHz)
                 else
                     ball_mvmt_vector(0) <= '1';
                 end if;
+                bounce_cnt <= bounce_cnt + 1;
             end if;
+                
           -- bewegen des Balls
           if(GameActv = '1') then
                 if (ball_mvmt_vector = "00") then  -- oben links
-                    ball_pos_x <= ball_pos_x - 1;
-                    ball_pos_y <= ball_pos_y - 1;
+                    ball_pos_x <= ball_pos_x - ball_velo;
+                    ball_pos_y <= ball_pos_y - ball_velo;
                 elsif (ball_mvmt_vector = "10") then  -- oben rechts
-                    ball_pos_x <= ball_pos_x + 1;
-                    ball_pos_y <= ball_pos_y - 1;
+                    ball_pos_x <= ball_pos_x + ball_velo;
+                    ball_pos_y <= ball_pos_y - ball_velo;
                 elsif (ball_mvmt_vector = "01") then  -- unten links
-                    ball_pos_x <= ball_pos_x - 1;
-                    ball_pos_y <= ball_pos_y + 1;
+                    ball_pos_x <= ball_pos_x - ball_velo;
+                    ball_pos_y <= ball_pos_y + ball_velo;
                 elsif (ball_mvmt_vector = "11") then -- unten rechts
-                    ball_pos_x <= ball_pos_x + 1;
-                    ball_pos_y <= ball_pos_y + 1;                                 -- unten rechts
+                    ball_pos_x <= ball_pos_x + ball_velo;
+                    ball_pos_y <= ball_pos_y + ball_velo;  
                 end if;
                 
             end if;
@@ -204,11 +209,12 @@ ball_movement : process(CLK_25_175MHz)
            end if;  
         ScoreUpt <= goal_scored_by_player;
         Ball_x <= ball_pos_x;
-        Ball_y <= ball_pos_y;     
+        Ball_y <= ball_pos_y;
+        ball_velo <= bounce_cnt / ACC_CONTACTS;
+        --ball_velocity <= ball_velo;
         end if;
        end if;
- 
-
+           
     end process;
 
 end Behavioral;
