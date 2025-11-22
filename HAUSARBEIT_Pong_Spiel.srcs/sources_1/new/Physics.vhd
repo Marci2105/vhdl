@@ -62,17 +62,19 @@ architecture Behavioral of Physics is
 
     -- Signale für die weitere Verarbeitung
     signal ball_mvmt_vector : std_logic_vector (1 downto 0) := (others => '1');
-    signal ball_velo : integer := 1;
-    signal bounce_cnt : integer := 0;    
+    signal ball_velo : integer := 1; 
+    signal bounce_cnt : integer := ACC_CONTACTS;  -- Ball startet mit 1px/Frame   
     signal ball_pos_x  : integer := 320;  -- Ballposition x
     signal ball_pos_y : integer := 240; -- Ballposition y
     signal x_offset_left : integer range 0 to 419 := 0;  -- horizontale Verschiebung (Bezugspunkt oben links)
     signal x_offset_right : integer range 0 to 419 := 0;  -- horizontale Verschiebung
     signal screen_refresh_d : std_logic := '0';
     signal screen_refresh_rise : std_logic := '0';
-    signal goal_happend:  std_logic := '0';
+    signal goal_happend :  std_logic := '0';
     signal any_button_pressed :  std_logic := '0'; 
     signal goal_scored_by_player: STD_LOGIC_VECTOR (1 downto 0):= (others => '0');
+    signal collision_lock_left : std_logic := '0';
+    signal collision_lock_right : std_logic := '0';
 
 begin
 
@@ -146,11 +148,11 @@ ball_movement : process(CLK_25_175MHz)
             
             
             -- right and left
-            if (ball_pos_x = BALL_RAD) then
+            if (ball_pos_x <= BALL_RAD and goal_happend = '0') then
                 ball_mvmt_vector(1) <= '1';  -- nach rechts
                 goal_happend <= '1';
                 goal_scored_by_player <= "10"; -- Spieler 2 hat getroffen
-            elsif (ball_pos_x = SCREEN_WIDTH - BALL_RAD) then
+            elsif (ball_pos_x >= SCREEN_WIDTH - BALL_RAD and goal_happend = '0') then
                 ball_mvmt_vector(1) <= '0';  -- nach links
                 goal_happend <= '1';
                 goal_scored_by_player <= "01"; -- Spieler 1 hat getroffen
@@ -159,8 +161,12 @@ ball_movement : process(CLK_25_175MHz)
             end if;
             
             -- linkes Padle
-            if ((ball_pos_x - BALL_RAD = PLATE_WIDTH + 10) and ((ball_pos_y - BALL_RAD < x_offset_left + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_left))) then
-                ball_mvmt_vector(1) <= '1';
+            if ((ball_pos_x - BALL_RAD <= PLATE_WIDTH + 10) and ((ball_pos_y - BALL_RAD < x_offset_left + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_left))) then
+                if (collision_lock_left = '0') then
+                    ball_mvmt_vector(1) <= '1';
+                    bounce_cnt <= bounce_cnt + 1;
+                    collision_lock_left <= '1';     -- Lock setzen, dass nur ein Bounce gezählt wird
+                end if;
             end if;
             if (((ball_pos_x - BALL_RAD <= 20) and (ball_pos_x + BALL_RAD >= 10)) and (((ball_pos_y + BALL_RAD <= x_offset_left + 1) and (ball_pos_y + BALL_RAD >= x_offset_left - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_left + PLATE_HEIGHT +1) and (ball_pos_y - BALL_RAD >= x_offset_left + PLATE_HEIGHT -1)))) then
                 if (ball_pos_y < x_offset_left + 35) then
@@ -168,12 +174,15 @@ ball_movement : process(CLK_25_175MHz)
                 else
                     ball_mvmt_vector(0) <= '1';
                 end if;
-                bounce_cnt <= bounce_cnt + 1;
             end if;
 
             -- rechtes Padle
-            if ((ball_pos_x + BALL_RAD = SCREEN_WIDTH - PLATE_WIDTH - 10) and ((ball_pos_y - BALL_RAD < x_offset_right + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_right))) then
-                ball_mvmt_vector(1) <= '0';
+            if ((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - PLATE_WIDTH - 10) and ((ball_pos_y - BALL_RAD < x_offset_right + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_right))) then
+                if (collision_lock_right = '0') then
+                    ball_mvmt_vector(1) <= '0';
+                    bounce_cnt <= bounce_cnt + 1;
+                    collision_lock_right <= '1';
+                end if;
             end if;
             
             if (((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - 20) and (ball_pos_x - BALL_RAD <= SCREEN_WIDTH - 10)) and (((ball_pos_y + BALL_RAD <= x_offset_right + 1) and (ball_pos_y + BALL_RAD >= x_offset_right - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_right + PLATE_HEIGHT + 1) and (ball_pos_y - BALL_RAD >= x_offset_right + PLATE_HEIGHT - 1)))) then
@@ -182,7 +191,16 @@ ball_movement : process(CLK_25_175MHz)
                 else
                     ball_mvmt_vector(0) <= '1';
                 end if;
-                bounce_cnt <= bounce_cnt + 1;
+            end if;
+            
+            -- Reset links: Ball fliegt nach rechts und ist > 20 Pixel entfernt
+            if (ball_mvmt_vector(1) = '1' and ball_pos_x - BALL_RAD > PLATE_WIDTH + 10 + 10) then
+                collision_lock_left <= '0';
+            end if;
+            
+            -- Reset rechts: Ball fliegt nach links und ist < 610 Pixel entfernt
+            if (ball_mvmt_vector(1) = '0' and ball_pos_x + BALL_RAD < SCREEN_WIDTH - PLATE_WIDTH - 10 - 10) then
+                collision_lock_right <= '0';
             end if;
                 
           -- bewegen des Balls
