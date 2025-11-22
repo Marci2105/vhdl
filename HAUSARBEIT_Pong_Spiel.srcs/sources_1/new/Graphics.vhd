@@ -37,9 +37,10 @@ entity Graphics is
            Ball_y : in integer;
            Plate_1 : in integer;
            Plate_2 : in integer;
-           Current_State: in integer;
            CLK_25_175MHz : in STD_LOGIC;
-           Score : in STD_LOGIC_VECTOR (13 downto 0);
+           Curr_Score_Player_1 : in STD_LOGIC_VECTOR (6 downto 0);
+           Curr_Score_Player_2 : in STD_LOGIC_VECTOR (6 downto 0);
+           Balls_left_Gra: in STD_LOGIC_VECTOR (1 downto 0);
            MenuSlct : in STD_LOGIC_VECTOR (1 downto 0);
            refresh_rate : out STD_LOGIC;
            HSYNC : out STD_LOGIC;
@@ -65,7 +66,7 @@ architecture Behavioral of Graphics is
     constant BACK_PORCH_HORIZONTAL : integer := 48;
     constant BACK_PORCH_VERTICAL : integer := 33;
     constant RADIUS : integer := 2; 
-    
+    constant VERSCHIEBUNG_SEVEN_SEG : integer := 320; 
     -- Signale für die Grafikdarstellung
     signal hPos : integer := 0;
     signal vPos : integer := 0;
@@ -159,12 +160,12 @@ begin
     end Process;
 
     
-   draw:process(CLK_25_175MHz, Current_State)
+   draw:process(CLK_25_175MHz, MenuSlct)
     begin    
              if (CLK_25_175MHz'event and CLK_25_175MHz = '1') then
                if videoOn = '1' then
                
-                   if Current_State = 0 then
+                   if MenuSlct = "00" then
                             --W
                             if (hPos >= 10 and hPos <= 15) and 
                                (vPos >= 190 and vPos <= 290) then
@@ -309,7 +310,7 @@ begin
                                 blue_i <= "0000";
                             end if;
                     
-                    elsif Current_State = 1 then
+                    elsif MenuSlct = "10" then
                         -- Linkes Paddle
                         if (hPos >= 10 and hPos <= 20) and 
                            (vPos >= Plate_1 and vPos <= Plate_1 + 75) then
@@ -335,6 +336,145 @@ begin
                             green_i <= "0000";
                             blue_i <= "0000";
                         end if;
+                        
+                        --linke Sieben Segment Anzeige
+                        if Curr_Score_Player_1(6) = '1' then 
+                            if (hPos >= 140 and hPos <= 180) and 
+                                   (vPos >= 10 and vPos <= 15) then
+                                    red_i <= "1111";
+                                    green_i <= "1111";
+                                    blue_i <= "1111";
+                            end if;
+                       end if;
+                       if Curr_Score_Player_1(5) = '1' then 
+                             if (hPos >= 175 and hPos <= 180) and 
+                                       (vPos >= 15 and vPos <= 55) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_1(4) = '1' then 
+                            if (hPos >= 175 and hPos <= 180) and 
+                                       (vPos >= 55 and vPos <= 95) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_1(3) = '1' then 
+                            if (hPos >= 140 and hPos <= 180) and 
+                                           (vPos >= 95 and vPos <= 100) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        if Curr_Score_Player_1(2) = '1' then 
+                            if (hPos >= 140 and hPos <= 145) and 
+                                       (vPos >= 55 and vPos <= 95) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_1(1) = '1' then 
+                            if (hPos >= 140 and hPos <= 145) and 
+                               (vPos >= 15 and vPos <= 55) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        if Curr_Score_Player_1(0) = '1' then 
+                            if (hPos >= 140 and hPos <= 180) and 
+                               (vPos >= 55 and vPos <= 60) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        
+                        --rechte Sieben Segment Anzeige
+                        if Curr_Score_Player_2(6) = '1' then 
+                            if (hPos >= 140 + VERSCHIEBUNG_SEVEN_SEG and hPos <= 180+ VERSCHIEBUNG_SEVEN_SEG) and 
+                                   (vPos >= 10 and vPos <= 15) then
+                                    red_i <= "1111";
+                                    green_i <= "1111";
+                                    blue_i <= "1111";
+                            end if;
+                       end if;
+                       if Curr_Score_Player_2(5) = '1' then 
+                             if (hPos >= 175+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 180+ VERSCHIEBUNG_SEVEN_SEG) and 
+                                       (vPos >= 15 and vPos <= 55) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_2(4) = '1' then 
+                            if (hPos >= 175+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 180+ VERSCHIEBUNG_SEVEN_SEG) and 
+                                       (vPos >= 55 and vPos <= 95) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_2(3) = '1' then 
+                            if (hPos >= 140+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 180+ VERSCHIEBUNG_SEVEN_SEG) and 
+                                           (vPos >= 95 and vPos <= 100) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        if Curr_Score_Player_2(2) = '1' then 
+                            if (hPos >= 140+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 145+ VERSCHIEBUNG_SEVEN_SEG) and 
+                                       (vPos >= 55 and vPos <= 95) then
+                                        red_i <= "1111";
+                                        green_i <= "1111";
+                                        blue_i <= "1111";
+                                end if;
+                        end if;
+                        if Curr_Score_Player_2(1) = '1' then 
+                            if (hPos >= 140+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 145+ VERSCHIEBUNG_SEVEN_SEG) and 
+                               (vPos >= 15 and vPos <= 55) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        if Curr_Score_Player_2(0) = '1' then 
+                            if (hPos >= 140+ VERSCHIEBUNG_SEVEN_SEG and hPos <= 180+ VERSCHIEBUNG_SEVEN_SEG) and 
+                               (vPos >= 55 and vPos <= 60) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                                    end if;
+                        end if;
+                        
+                        -- STrickliste für übrige Bälle
+                        if Balls_left_Gra(1)= '1' then 
+                            if (hPos >= 317 and hPos <= 322) and 
+                               (vPos >= 10 and vPos <= 50) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                            elsif (hPos >= 307 and hPos <= 312) and 
+                               (vPos >= 10 and vPos <= 50) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                            end if;
+                        end if;
+                        if Balls_left_Gra(0)= '1' then  
+                            if (hPos >= 327 and hPos <= 332) and 
+                               (vPos >= 10 and vPos <= 50) then
+                                            red_i <= "1111";
+                                            green_i <= "1111";
+                                            blue_i <= "1111";
+                            end if;
+                        end if;
                     
                     else
                         red_i <= "0000";
@@ -350,5 +490,3 @@ RED <= red_i;
 GREEN <= green_i;
 BLUE <= blue_i;   
 end Behavioral;
-
-
