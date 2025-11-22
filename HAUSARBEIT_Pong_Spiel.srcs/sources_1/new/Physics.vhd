@@ -36,14 +36,13 @@ entity Physics is
     Port ( BTNs : in STD_LOGIC_VECTOR (3 downto 0);
            CLK_25_175MHz : in STD_LOGIC;
            screen_refresh : in STD_LOGIC;
+           GameActv : in STD_LOGIC;
            ScoreUpt : out STD_LOGIC_VECTOR (1 downto 0);
            BtnPress : out STD_LOGIC;
-           GameActv : out STD_LOGIC;
            Ball_x : out integer;
            Ball_y : out integer;
            Plate_1 : out integer;
-           Plate_2 : out integer;
-           Curr_State: out integer);
+           Plate_2 : out integer);
 end Physics;
 
 architecture Behavioral of Physics is
@@ -70,16 +69,17 @@ architecture Behavioral of Physics is
     signal screen_refresh_d : std_logic := '0';
     signal screen_refresh_rise : std_logic := '0';
     signal goal_happend:  std_logic := '0';
-    signal intern_curr_State : integer range 0 to 2 := 0; 
-    
+    signal any_button_pressed :  std_logic := '0'; 
+    signal goal_scored_by_player: STD_LOGIC_VECTOR (1 downto 0):= (others => '0');
+
 begin
 
 detect_current_State:process(CLK_25_175MHz)
   begin
       if ((BTNs(0) = '1') or (BTNs(1) = '1')or(BTNs(2) = '1')or(BTNs(3) = '1')) then
-        intern_curr_State <= 1;
+        any_button_pressed <= '1';
         end if;
-      Curr_State <= intern_curr_State;
+      BtnPress <= any_button_pressed;
   end Process;
   
 process(CLK_25_175MHz)
@@ -142,13 +142,18 @@ ball_movement : process(CLK_25_175MHz)
                 ball_mvmt_vector(0) <= '0';  -- nach oben
             end if;
             
+            
             -- right and left
-            if (ball_pos_x <= BALL_RAD + 1) then
+            if (ball_pos_x = BALL_RAD) then
                 ball_mvmt_vector(1) <= '1';  -- nach rechts
                 goal_happend <= '1';
-            elsif (ball_pos_x >= SCREEN_WIDTH - BALL_RAD - 1) then
+                goal_scored_by_player <= "10"; -- Spieler 2 hat getroffen
+            elsif (ball_pos_x = SCREEN_WIDTH - BALL_RAD) then
                 ball_mvmt_vector(1) <= '0';  -- nach links
                 goal_happend <= '1';
+                goal_scored_by_player <= "01"; -- Spieler 1 hat getroffen
+            else 
+                goal_scored_by_player <= "00";
             end if;
             
             -- linkes Padle
@@ -176,7 +181,7 @@ ball_movement : process(CLK_25_175MHz)
                 end if;
             end if;
           -- bewegen des Balls
-          if(intern_curr_State = 1) then
+          if(GameActv = '1') then
                 if (ball_mvmt_vector = "00") then  -- oben links
                     ball_pos_x <= ball_pos_x - 1;
                     ball_pos_y <= ball_pos_y - 1;
@@ -196,13 +201,14 @@ ball_movement : process(CLK_25_175MHz)
                 ball_pos_x <= MIDDLE_HOR;
                 ball_pos_y <= MIDDLE_VER;
                 goal_happend <= '0';
-           end if;
+           end if;  
+        ScoreUpt <= goal_scored_by_player;
+        Ball_x <= ball_pos_x;
+        Ball_y <= ball_pos_y;     
         end if;
        end if;
-    Ball_x <= ball_pos_x;
-    Ball_y <= ball_pos_y;    
+ 
+
     end process;
 
 end Behavioral;
-
-
