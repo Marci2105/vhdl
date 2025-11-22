@@ -33,16 +33,112 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Scoreboard is
-    Port ( ScoreUpt : in STD_LOGIC_VECTOR (1 downto 0);
-           GameActv : in STD_LOGIC;
-           BtnPress : in STD_LOGIC;
-           Score : out STD_LOGIC_VECTOR (13 downto 0);
+    Port ( Score_Upt : in STD_LOGIC_VECTOR (1 downto 0);
+           CLK_25_175MHz : in STD_LOGIC;
+           Btn_Press : in STD_LOGIC;
+           screen_refreshed : in STD_LOGIC;
+           Curr_Score_1 : out STD_LOGIC_VECTOR (6 downto 0);
+           Curr_Score_2 : out STD_LOGIC_VECTOR (6 downto 0);
+           Game_Actv : out STD_LOGIC;
+           Balls_left: out STD_LOGIC_VECTOR (1 downto 0);
            MenuSlct : out STD_LOGIC_VECTOR (1 downto 0));
 end Scoreboard;
 
+
+
+
 architecture Behavioral of Scoreboard is
 
+    signal current_state: STD_LOGIC_VECTOR (1 downto 0):= (others => '0');
+    signal Game_atv: STD_LOGIC :='0';
+    signal balls_left_int: integer := 3;
+    signal Curr_score_p1: integer := 0;
+    signal Curr_score_p2: integer := 0;
+    signal Game_over: std_logic := '0';
+    signal screen_refresh_d : std_logic := '0';
+    signal screen_refresh_rise : std_logic := '0';
+    signal signal_Curr_Score_1 : STD_LOGIC_VECTOR (6 downto 0);
+    signal signal_Curr_Score_2 : STD_LOGIC_VECTOR (6 downto 0);
+    signal signal_balls_left: STD_LOGIC_VECTOR (1 downto 0) := (others => '1');
 begin
 
+process(CLK_25_175MHz)
+    begin
+        if rising_edge(CLK_25_175MHz) then
+            screen_refresh_d <= screen_refreshed;
+            screen_refresh_rise <= screen_refreshed AND NOT screen_refresh_d;
+        end if;
+    end process;
+
+State_Machine : process(CLK_25_175MHz)
+begin 
+    if (rising_edge(CLK_25_175MHz)) then
+            if (Btn_Press = '1') and (Game_atv = '0') and (Game_over = '0')then 
+                current_state <= "10"; -- State das Spiel läuft
+                Game_atv <= '1';
+            elsif (balls_left_int = 0) and (Game_atv = '1') and (Game_over = '0')then
+                current_state <= "11"; -- State das Spiel beendet ist
+                Game_atv <= '0';
+                Game_over <= '1';
+            end if;
+        MenuSlct <= current_state;
+        Game_Actv <= Game_atv;
+    end if;
+end process;
+
+Current_Score_proc : process(CLK_25_175MHz)
+begin
+    if (rising_edge(CLK_25_175MHz)) then
+        if screen_refresh_rise = '1' then
+            if Score_Upt /= "00" then
+                balls_left_int <= balls_left_int -1;
+                if Score_Upt = "10" then
+                    Curr_score_p2 <= Curr_score_p2 +1;
+                elsif Score_Upt = "01" then 
+                    Curr_score_p1 <= Curr_score_p1 +1;
+                end if;
+               
+            end if;
+        end if;
+    end if;
+end process;
+
+Convert_Score_to_seven_seg : process(CLK_25_175MHz)
+begin
+    if (rising_edge(CLK_25_175MHz)) then
+        if Curr_score_p1 = 0 then 
+            signal_Curr_Score_1 <= "1111110";
+        elsif Curr_score_p1 = 1 then 
+            signal_Curr_Score_1 <= "0110000";
+        elsif Curr_score_p1 = 2 then 
+            signal_Curr_Score_1 <= "1101101";
+        end if;
+        
+        if Curr_score_p2 = 0 then 
+            signal_Curr_Score_2 <= "1111110";
+        elsif Curr_score_p2 = 1 then 
+            signal_Curr_Score_2 <= "0110000";
+        elsif Curr_score_p2 = 2 then 
+            signal_Curr_Score_2 <= "1101101";
+        end if;
+        
+        if balls_left_int = 3 then 
+            signal_balls_left <= "11";
+        elsif  balls_left_int = 2 then 
+            signal_balls_left <= "10";
+        elsif  balls_left_int = 1 then 
+            signal_balls_left <= "01";
+        elsif  balls_left_int = 0 then 
+            signal_balls_left <= "00";
+        end if;
+        
+    Curr_Score_1<=signal_Curr_Score_1;
+    Curr_Score_2<=signal_Curr_Score_2;
+    balls_left<= signal_balls_left;
+    end if;
+    
+    
+end process;
 
 end Behavioral;
+
