@@ -67,6 +67,12 @@ architecture Behavioral of Graphics is
     constant BACK_PORCH_VERTICAL : integer := 33;
     constant RADIUS : integer := 2; 
     constant VERSCHIEBUNG_SEVEN_SEG : integer := 320; 
+
+   -- welcome image
+    constant IMG_WIDTH : integer := 160;
+    constant IMG_HEIGHT : integer := 120;
+    constant IMG_STRETCH : integer := 4;
+
     -- Signale für die Grafikdarstellung
     signal hPos : integer := 0;
     signal vPos : integer := 0;
@@ -78,8 +84,27 @@ architecture Behavioral of Graphics is
     signal blue_i  : std_logic_vector(3 downto 0) := (others => '0');
     signal signal_vsync : std_logic := '0';
 
+    -- image signals
+    signal rom_addr : std_logic_vector(14 downto 0) := (others => '0');
+    signal rom_data : std_logic_vector(11 downto 0) := (others => '0'); 
+
+    COMPONENT blk_mem_gen_0 
+        PORT(
+        clka : IN std_logic;
+        addra : IN std_logic_vector(14 downto 0);
+        douta : OUT std_logic_vector(11 downto 0)
+        );
+    end COMPONENT;
+
     
 begin
+
+    image_rom : blk_mem_gen_0
+    PORT MAP (
+        clka => CLK_25_175MHz,
+        addra => rom_addr,
+        douta => rom_data
+    );
 --    clk_divider_50:process(CLK_25_125MHz)
 --    begin
 --        if (CLK_25_125MHz'event and CLK_25_125MHz = '1') then
@@ -145,7 +170,17 @@ begin
         refresh_rate <= signal_vsync;
         VSYNC <= signal_vsync;
     end process;
- 
+
+    Address_Gen : process(hPos, vPos)
+    begin
+        if (hPos < SCREEN_WIDTH) and (vPos < SCREEN_HEIGHT) then
+            rom_addr <= std_logic_vector(to_unsigned(
+                (vPos / 4) * 160 + (hPos / 4), 
+                15)); 
+        else
+            rom_addr <= (others => '0');
+        end if;
+    end process;
  
     vidON:process(CLK_25_175MHz)
     begin
@@ -166,6 +201,11 @@ begin
                if videoOn = '1' then
                
                    if MenuSlct = "00" then
+
+                        --red_i   <= rom_data(11 downto 8);
+                        --green_i <= rom_data(7 downto 4);
+                        --blue_i  <= rom_data(3 downto 0);
+                       --rest aus MenuSlct 00 sollte glaub gelöscht werden können
                             --W
                             if (hPos >= 10 and hPos <= 15) and 
                                (vPos >= 190 and vPos <= 290) then
