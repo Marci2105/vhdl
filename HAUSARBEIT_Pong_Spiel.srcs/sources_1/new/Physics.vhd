@@ -37,6 +37,7 @@ entity Physics is
            CLK_25_175MHz : in STD_LOGIC;
            screen_refresh : in STD_LOGIC;
            GameActv : in STD_LOGIC;
+           Game_Reset: in STD_LOGIC;
            ScoreUpt : out STD_LOGIC_VECTOR (1 downto 0);
            BtnPress : out STD_LOGIC;
            Ball_x : out integer;
@@ -138,101 +139,106 @@ move_bar_right : process(CLK_25_175MHz)
 ball_movement : process(CLK_25_175MHz)
     begin
        if (rising_edge(CLK_25_175MHz)) then
-        if (screen_refresh_rise = '1') then
-            -- top and bottom
-            if (ball_pos_y <= BALL_RAD + 1) then
-                ball_mvmt_vector(0) <= '1';  -- nach unten
-            elsif (ball_pos_y >= SCREEN_HEIGHT - BALL_RAD - 1) then
-                ball_mvmt_vector(0) <= '0';  -- nach oben
-            end if;
-            
-            
-            -- right and left
-            if (ball_pos_x <= BALL_RAD and goal_happend = '0') then
-                ball_mvmt_vector(1) <= '1';  -- nach rechts
-                goal_happend <= '1';
-                goal_scored_by_player <= "10"; -- Spieler 2 hat getroffen
-            elsif (ball_pos_x >= SCREEN_WIDTH - BALL_RAD and goal_happend = '0') then
-                ball_mvmt_vector(1) <= '0';  -- nach links
-                goal_happend <= '1';
-                goal_scored_by_player <= "01"; -- Spieler 1 hat getroffen
-            else 
-                goal_scored_by_player <= "00";
-            end if;
-            
-            -- linkes Padle
-            if ((ball_pos_x - BALL_RAD <= PLATE_WIDTH + 10) and ((ball_pos_y - BALL_RAD < x_offset_left + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_left))) then
-                if (collision_lock_left = '0') then
-                    ball_mvmt_vector(1) <= '1';
-                    bounce_cnt <= bounce_cnt + 1;
-                    collision_lock_left <= '1';     -- Lock setzen, dass nur ein Bounce gezählt wird
+           if Game_Reset = '1' then
+                ball_pos_x <= 320;
+                ball_pos_y <= 240;
+                ball_velo <= 1;
+                bounce_cnt <= 3;
+           else
+                if (screen_refresh_rise = '1') then
+                    -- top and bottom
+                    if (ball_pos_y <= BALL_RAD + 1) then
+                        ball_mvmt_vector(0) <= '1';  -- nach unten
+                    elsif (ball_pos_y >= SCREEN_HEIGHT - BALL_RAD - 1) then
+                        ball_mvmt_vector(0) <= '0';  -- nach oben
+                    end if;
+                    
+                    
+                    -- right and left
+                    if (ball_pos_x <= BALL_RAD and goal_happend = '0') then
+                        ball_mvmt_vector(1) <= '1';  -- nach rechts
+                        goal_happend <= '1';
+                        goal_scored_by_player <= "10"; -- Spieler 2 hat getroffen
+                    elsif (ball_pos_x >= SCREEN_WIDTH - BALL_RAD and goal_happend = '0') then
+                        ball_mvmt_vector(1) <= '0';  -- nach links
+                        goal_happend <= '1';
+                        goal_scored_by_player <= "01"; -- Spieler 1 hat getroffen
+                    else 
+                        goal_scored_by_player <= "00";
+                    end if;
+                    
+                    -- linkes Padle
+                    if ((ball_pos_x - BALL_RAD <= PLATE_WIDTH + 10) and ((ball_pos_y - BALL_RAD < x_offset_left + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_left))) then
+                        if (collision_lock_left = '0') then
+                            ball_mvmt_vector(1) <= '1';
+                            bounce_cnt <= bounce_cnt + 1;
+                            collision_lock_left <= '1';     -- Lock setzen, dass nur ein Bounce gezählt wird
+                        end if;
+                    end if;
+                    if (((ball_pos_x - BALL_RAD <= 20) and (ball_pos_x + BALL_RAD >= 10)) and (((ball_pos_y + BALL_RAD <= x_offset_left + 1) and (ball_pos_y + BALL_RAD >= x_offset_left - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_left + PLATE_HEIGHT +1) and (ball_pos_y - BALL_RAD >= x_offset_left + PLATE_HEIGHT -1)))) then
+                        if (ball_pos_y < x_offset_left + 35) then
+                            ball_mvmt_vector(0) <= '0';
+                        else
+                            ball_mvmt_vector(0) <= '1';
+                        end if;
+                    end if;
+        
+                    -- rechtes Padle
+                    if ((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - PLATE_WIDTH - 10) and ((ball_pos_y - BALL_RAD < x_offset_right + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_right))) then
+                        if (collision_lock_right = '0') then
+                            ball_mvmt_vector(1) <= '0';
+                            bounce_cnt <= bounce_cnt + 1;
+                            collision_lock_right <= '1';
+                        end if;
+                    end if;
+                    
+                    if (((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - 20) and (ball_pos_x - BALL_RAD <= SCREEN_WIDTH - 10)) and (((ball_pos_y + BALL_RAD <= x_offset_right + 1) and (ball_pos_y + BALL_RAD >= x_offset_right - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_right + PLATE_HEIGHT + 1) and (ball_pos_y - BALL_RAD >= x_offset_right + PLATE_HEIGHT - 1)))) then
+                        if (ball_pos_y < x_offset_right + 35) then
+                            ball_mvmt_vector(0) <= '0';
+                        else
+                            ball_mvmt_vector(0) <= '1';
+                        end if;
+                    end if;
+                    
+                    -- Reset links: Ball fliegt nach rechts und ist > 20 Pixel entfernt
+                    if (ball_mvmt_vector(1) = '1' and ball_pos_x - BALL_RAD > PLATE_WIDTH + 10 + 10) then
+                        collision_lock_left <= '0';
+                    end if;
+                    
+                    -- Reset rechts: Ball fliegt nach links und ist < 610 Pixel entfernt
+                    if (ball_mvmt_vector(1) = '0' and ball_pos_x + BALL_RAD < SCREEN_WIDTH - PLATE_WIDTH - 10 - 10) then
+                        collision_lock_right <= '0';
+                    end if;
+                        
+                  -- bewegen des Balls
+                  if(GameActv = '1') then
+                        if (ball_mvmt_vector = "00") then  -- oben links
+                            ball_pos_x <= ball_pos_x - ball_velo;
+                            ball_pos_y <= ball_pos_y - ball_velo;
+                        elsif (ball_mvmt_vector = "10") then  -- oben rechts
+                            ball_pos_x <= ball_pos_x + ball_velo;
+                            ball_pos_y <= ball_pos_y - ball_velo;
+                        elsif (ball_mvmt_vector = "01") then  -- unten links
+                            ball_pos_x <= ball_pos_x - ball_velo;
+                            ball_pos_y <= ball_pos_y + ball_velo;
+                        elsif (ball_mvmt_vector = "11") then -- unten rechts
+                            ball_pos_x <= ball_pos_x + ball_velo;
+                            ball_pos_y <= ball_pos_y + ball_velo;  
+                        end if;
+                        
+                    end if;
+                    if (goal_happend = '1')then
+                        ball_pos_x <= MIDDLE_HOR;
+                        ball_pos_y <= MIDDLE_VER;
+                        goal_happend <= '0';
+                   end if;  
                 end if;
-            end if;
-            if (((ball_pos_x - BALL_RAD <= 20) and (ball_pos_x + BALL_RAD >= 10)) and (((ball_pos_y + BALL_RAD <= x_offset_left + 1) and (ball_pos_y + BALL_RAD >= x_offset_left - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_left + PLATE_HEIGHT +1) and (ball_pos_y - BALL_RAD >= x_offset_left + PLATE_HEIGHT -1)))) then
-                if (ball_pos_y < x_offset_left + 35) then
-                    ball_mvmt_vector(0) <= '0';
-                else
-                    ball_mvmt_vector(0) <= '1';
-                end if;
-            end if;
-
-            -- rechtes Padle
-            if ((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - PLATE_WIDTH - 10) and ((ball_pos_y - BALL_RAD < x_offset_right + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_right))) then
-                if (collision_lock_right = '0') then
-                    ball_mvmt_vector(1) <= '0';
-                    bounce_cnt <= bounce_cnt + 1;
-                    collision_lock_right <= '1';
-                end if;
-            end if;
-            
-            if (((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - 20) and (ball_pos_x - BALL_RAD <= SCREEN_WIDTH - 10)) and (((ball_pos_y + BALL_RAD <= x_offset_right + 1) and (ball_pos_y + BALL_RAD >= x_offset_right - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_right + PLATE_HEIGHT + 1) and (ball_pos_y - BALL_RAD >= x_offset_right + PLATE_HEIGHT - 1)))) then
-                if (ball_pos_y < x_offset_right + 35) then
-                    ball_mvmt_vector(0) <= '0';
-                else
-                    ball_mvmt_vector(0) <= '1';
-                end if;
-            end if;
-            
-            -- Reset links: Ball fliegt nach rechts und ist > 20 Pixel entfernt
-            if (ball_mvmt_vector(1) = '1' and ball_pos_x - BALL_RAD > PLATE_WIDTH + 10 + 10) then
-                collision_lock_left <= '0';
-            end if;
-            
-            -- Reset rechts: Ball fliegt nach links und ist < 610 Pixel entfernt
-            if (ball_mvmt_vector(1) = '0' and ball_pos_x + BALL_RAD < SCREEN_WIDTH - PLATE_WIDTH - 10 - 10) then
-                collision_lock_right <= '0';
-            end if;
-                
-          -- bewegen des Balls
-          if(GameActv = '1') then
-                if (ball_mvmt_vector = "00") then  -- oben links
-                    ball_pos_x <= ball_pos_x - ball_velo;
-                    ball_pos_y <= ball_pos_y - ball_velo;
-                elsif (ball_mvmt_vector = "10") then  -- oben rechts
-                    ball_pos_x <= ball_pos_x + ball_velo;
-                    ball_pos_y <= ball_pos_y - ball_velo;
-                elsif (ball_mvmt_vector = "01") then  -- unten links
-                    ball_pos_x <= ball_pos_x - ball_velo;
-                    ball_pos_y <= ball_pos_y + ball_velo;
-                elsif (ball_mvmt_vector = "11") then -- unten rechts
-                    ball_pos_x <= ball_pos_x + ball_velo;
-                    ball_pos_y <= ball_pos_y + ball_velo;  
-                end if;
-                
-            end if;
-            if (goal_happend = '1')then
-                ball_pos_x <= MIDDLE_HOR;
-                ball_pos_y <= MIDDLE_VER;
-                goal_happend <= '0';
-           end if;  
-        ScoreUpt <= goal_scored_by_player;
-        Ball_x <= ball_pos_x;
-        Ball_y <= ball_pos_y;
-        ball_velo <= bounce_cnt / ACC_CONTACTS;
-        --ball_velocity <= ball_velo;
-        end if;
-       end if;
-           
+               end if;
+               ball_velo <= bounce_cnt / ACC_CONTACTS;
+           end if;
+           ScoreUpt <= goal_scored_by_player;
+           Ball_x <= ball_pos_x;
+           Ball_y <= ball_pos_y;
     end process;
 
 end Behavioral;
