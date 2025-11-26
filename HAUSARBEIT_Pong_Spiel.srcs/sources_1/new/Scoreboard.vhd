@@ -37,10 +37,12 @@ entity Scoreboard is
            CLK_25_175MHz : in STD_LOGIC;
            Btn_Press : in STD_LOGIC;
            screen_refreshed : in STD_LOGIC;
+           RESET_Game : in STD_LOGIC;
            Curr_Score_1 : out STD_LOGIC_VECTOR (6 downto 0);
            Curr_Score_2 : out STD_LOGIC_VECTOR (6 downto 0);
            Game_Actv : out STD_LOGIC;
            Balls_left: out STD_LOGIC_VECTOR (1 downto 0);
+           Winning_player: out std_logic;
            MenuSlct : out STD_LOGIC_VECTOR (1 downto 0));
 end Scoreboard;
 
@@ -55,6 +57,8 @@ architecture Behavioral of Scoreboard is
     signal Curr_score_p1: integer := 0;
     signal Curr_score_p2: integer := 0;
     signal Game_over: std_logic := '0';
+    signal Reset: std_logic := '0';
+    signal Winning_player_signal: std_logic := '0';
     signal screen_refresh_d : std_logic := '0';
     signal screen_refresh_rise : std_logic := '0';
     signal signal_Curr_Score_1 : STD_LOGIC_VECTOR (6 downto 0);
@@ -73,32 +77,50 @@ process(CLK_25_175MHz)
 State_Machine : process(CLK_25_175MHz)
 begin 
     if (rising_edge(CLK_25_175MHz)) then
-            if (Btn_Press = '1') and (Game_atv = '0') and (Game_over = '0')then 
-                current_state <= "10"; -- State das Spiel läuft
-                Game_atv <= '1';
-            elsif (balls_left_int = 0) and (Game_atv = '1') and (Game_over = '0')then
-                current_state <= "11"; -- State das Spiel beendet ist
+            if RESET_Game = '1' then
                 Game_atv <= '0';
-                Game_over <= '1';
+                Game_over <= '0';
+                current_state <= "00";
+            else   
+                if (((Btn_Press = '1') and (Game_atv = '0') and (Game_over = '0') and (current_state = "00")))then 
+                    current_state <= "10"; -- State das Spiel läuft
+                    Game_atv <= '1';          
+                elsif (current_state= "10") and (balls_left_int = 0) and (Game_atv = '1') and (Game_over = '0')then
+                    current_state <= "11"; -- State das Spiel beendet ist
+                    if Curr_Score_p1 >= 2 then 
+                        Winning_player_signal <= '1';
+                    elsif  Curr_score_p2 >= 2 then 
+                        Winning_player_signal <= '0';
+                    end if;
+                    Game_atv <= '0';
+                    Game_over <= '1';      
+               end if;
             end if;
-        MenuSlct <= current_state;
-        Game_Actv <= Game_atv;
     end if;
+    MenuSlct <= current_state;
+    Game_Actv <= Game_atv;
+    Winning_player <= Winning_player_signal;
 end process;
 
 Current_Score_proc : process(CLK_25_175MHz)
 begin
     if (rising_edge(CLK_25_175MHz)) then
         if screen_refresh_rise = '1' then
-            if Score_Upt /= "00" then
-                balls_left_int <= balls_left_int -1;
-                if Score_Upt = "10" then
-                    Curr_score_p2 <= Curr_score_p2 +1;
-                elsif Score_Upt = "01" then 
-                    Curr_score_p1 <= Curr_score_p1 +1;
+            if  RESET_Game = '1' then 
+                Curr_Score_p1 <= 0;
+                Curr_Score_p2 <= 0;
+                balls_left_int <= 3;
+            else 
+                if Score_Upt /= "00" then
+                    balls_left_int <= balls_left_int -1;
+                    if Score_Upt = "10" then
+                        Curr_score_p2 <= Curr_score_p2 +1;
+                    elsif Score_Upt = "01" then 
+                        Curr_score_p1 <= Curr_score_p1 +1;
+                    end if;
+                   
                 end if;
-               
-            end if;
+              end if;
         end if;
     end if;
 end process;
@@ -141,4 +163,3 @@ begin
 end process;
 
 end Behavioral;
-
