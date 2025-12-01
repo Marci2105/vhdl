@@ -61,6 +61,7 @@ architecture Behavioral of Physics is
     constant MIDDLE_HOR : integer := 320;
     constant MIDDLE_VER : integer := 240;
     constant ACC_CONTACTS : integer := 3; -- Ballkontakte, bis dieser schneller wird
+    constant MAX_SPEED : integer := 4;
 
     -- Signale für die weitere Verarbeitung
     signal ball_mvmt_vector : std_logic_vector (1 downto 0) := (others => '1');
@@ -236,6 +237,9 @@ ball_movement : process(CLK_25_175MHz)
                 end if;
                end if;
                ball_velo <= bounce_cnt / ACC_CONTACTS;
+               if (ball_velo > MAX_SPEED) then
+                   ball_velo <= MAX_SPEED;
+               end if;
            end if;
            ScoreUpt <= goal_scored_by_player;
            Ball_x <= ball_pos_x;
