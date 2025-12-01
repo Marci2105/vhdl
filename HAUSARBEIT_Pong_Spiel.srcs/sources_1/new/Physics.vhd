@@ -57,6 +57,7 @@ architecture Behavioral of Physics is
     constant BALL_RAD : integer := 2;
     constant VER_MAX_BAR : integer := SCREEN_HEIGHT - PLATE_HEIGHT;
     constant VER_MIN_BAR : integer := 0;
+    constant MOVE_BAR : integer := 3;
     constant MIDDLE_HOR : integer := 320;
     constant MIDDLE_VER : integer := 240;
     constant ACC_CONTACTS : integer := 3; -- Ballkontakte, bis dieser schneller wird
@@ -101,13 +102,13 @@ move_bar_left : process(CLK_25_175MHz)
         if rising_edge(CLK_25_175MHz) then
             if( BTNs(0) = '1' and (screen_refresh_rise = '1')) then
                     if x_offset_left < VER_MAX_BAR then
-                        x_offset_left <= x_offset_left + 3;
+                        x_offset_left <= x_offset_left + MOVE_BAR;
                     else
                         x_offset_left <= VER_MAX_BAR;
                     end if;
             elsif( BTNs(1) = '1' and (screen_refresh_rise = '1')) then
                 if x_offset_left > VER_MIN_BAR then
-                    x_offset_left <= x_offset_left - 3;
+                    x_offset_left <= x_offset_left - MOVE_BAR;
                 else
                     x_offset_left <= VER_MIN_BAR;
                 end if;
@@ -121,13 +122,13 @@ move_bar_right : process(CLK_25_175MHz)
         if rising_edge(CLK_25_175MHz) then
             if( BTNs(2) = '1' and (screen_refresh_rise = '1')) then
                 if x_offset_right < VER_MAX_BAR then
-                    x_offset_right <= x_offset_right + 3;
+                    x_offset_right <= x_offset_right + MOVE_BAR;
                 else
                     x_offset_right <= VER_MAX_BAR;
                 end if;
             elsif( BTNs(3) = '1' and (screen_refresh_rise = '1')) then
                 if x_offset_right > VER_MIN_BAR then
-                    x_offset_right <= x_offset_right - 3;
+                    x_offset_right <= x_offset_right - MOVE_BAR;
                 else
                     x_offset_right <= VER_MIN_BAR;
                 end if;
