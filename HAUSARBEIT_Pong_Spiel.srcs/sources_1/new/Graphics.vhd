@@ -267,14 +267,14 @@ begin
                     elsif MenuSlct = "10" then
                         -- Linkes Paddle
                         if (hPos >= 10 and hPos <= 20) and 
-                           (vPos >= Plate_1 and vPos <= Plate_1 + 75) then
+                           (vPos >= Plate_1 and vPos <= Plate_1 + PLATE_HEIGHT) then
                             red_i <= "1111";
                             green_i <= "1111";
                             blue_i <= "1111";
                     
                         -- Rechtes Paddle
                         elsif (hPos >= SCREEN_WIDTH - 20 and hPos <= SCREEN_WIDTH - 10) and
-                              (vPos >= Plate_2 and vPos <= Plate_2 + 75) then
+                              (vPos >= Plate_2 and vPos <= Plate_2 + PLATE_HEIGHT) then
                             red_i <= "1111";
                             green_i <= "1111";
                             blue_i <= "1111";
