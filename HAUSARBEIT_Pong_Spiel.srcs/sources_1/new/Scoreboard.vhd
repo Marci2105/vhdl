@@ -64,6 +64,9 @@ architecture Behavioral of Scoreboard is
     signal signal_Curr_Score_1 : STD_LOGIC_VECTOR (6 downto 0);
     signal signal_Curr_Score_2 : STD_LOGIC_VECTOR (6 downto 0);
     signal signal_balls_left: STD_LOGIC_VECTOR (1 downto 0) := (others => '1');
+    
+    constant GOALS_NEEDED_TO_WIN : integer := 2;
+    constant AMOUNT_OF_BALLS_TO_START : integer := 3;
 begin
 
 process(CLK_25_175MHz)
@@ -87,9 +90,9 @@ begin
                     Game_atv <= '1';          
                 elsif (current_state= "10") and (balls_left_int = 0) and (Game_atv = '1') and (Game_over = '0')then
                     current_state <= "11"; -- State das Spiel beendet ist
-                    if Curr_Score_p1 >= 2 then 
+                    if Curr_Score_p1 >= GOALS_NEEDED_TO_WIN then 
                         Winning_player_signal <= '1';
-                    elsif  Curr_score_p2 >= 2 then 
+                    elsif  Curr_score_p2 >= GOALS_NEEDED_TO_WIN then 
                         Winning_player_signal <= '0';
                     end if;
                     Game_atv <= '0';
@@ -109,7 +112,7 @@ begin
             if  RESET_Game = '1' then 
                 Curr_Score_p1 <= 0;
                 Curr_Score_p2 <= 0;
-                balls_left_int <= 3;
+                balls_left_int <= AMOUNT_OF_BALLS_TO_START;
             else 
                 if Score_Upt /= "00" then
                     balls_left_int <= balls_left_int -1;
