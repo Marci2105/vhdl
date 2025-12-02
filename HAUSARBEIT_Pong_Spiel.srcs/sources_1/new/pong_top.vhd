@@ -1,36 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12.11.2025 20:04:19
--- Design Name: 
--- Module Name: pong_top - Structural
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 -- Externe Anschlüsse an das System
 entity pong_top is
@@ -174,7 +144,7 @@ begin
        Btn_Press => internal_button_pressed);
        
    
-   -- Instanziierung und Verdratung der clk_wiz
+   -- Instanziierung und Verdratung des clk_wiz
    U4_CLK_WIZ_0 : clk_wiz_1
    port map(
        CLK_IN1 => CLK100MHZ,
