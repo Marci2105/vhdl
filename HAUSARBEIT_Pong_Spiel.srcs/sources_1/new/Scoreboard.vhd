@@ -1,36 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12.11.2025 21:21:35
--- Design Name: 
--- Module Name: Scoreboard - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity Scoreboard is
     Port ( Score_Upt : in STD_LOGIC_VECTOR (1 downto 0);
@@ -46,11 +16,8 @@ entity Scoreboard is
            MenuSlct : out STD_LOGIC_VECTOR (1 downto 0));
 end Scoreboard;
 
-
-
-
 architecture Behavioral of Scoreboard is
-
+    -- Verwendete Signale
     signal current_state: STD_LOGIC_VECTOR (1 downto 0):= (others => '0');
     signal Game_atv: STD_LOGIC :='0';
     signal balls_left_int: integer := 3;
@@ -64,7 +31,8 @@ architecture Behavioral of Scoreboard is
     signal signal_Curr_Score_1 : STD_LOGIC_VECTOR (6 downto 0);
     signal signal_Curr_Score_2 : STD_LOGIC_VECTOR (6 downto 0);
     signal signal_balls_left: STD_LOGIC_VECTOR (1 downto 0) := (others => '1');
-    
+
+    -- Verwendete Konstanten für Berechnung
     constant GOALS_NEEDED_TO_WIN : integer := 2;
     constant AMOUNT_OF_BALLS_TO_START : integer := 3;
 begin
@@ -83,7 +51,7 @@ begin
             if RESET_Game = '1' then
                 Game_atv <= '0';
                 Game_over <= '0';
-                current_state <= "00";
+                current_state <= "00"; -- State das Spiel kann gestartet werden
             else   
                 if (((Btn_Press = '1') and (Game_atv = '0') and (Game_over = '0') and (current_state = "00")))then 
                     current_state <= "10"; -- State das Spiel läuft
