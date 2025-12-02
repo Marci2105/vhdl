@@ -1,36 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12.11.2025 21:21:35
--- Design Name: 
--- Module Name: Physics - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity Physics is
     Port ( BTNs : in STD_LOGIC_VECTOR (3 downto 0);
@@ -44,7 +14,6 @@ entity Physics is
            Ball_y : out integer;
            Plate_1 : out integer;
            Plate_2 : out integer);
-           -- ball_velocity : out integer);
 end Physics;
 
 architecture Behavioral of Physics is
@@ -170,6 +139,7 @@ ball_movement : process(CLK_25_175MHz)
                     end if;
                     
                     -- linkes Padle
+                    -- Abfrage der vertikalen Seite
                     if ((ball_pos_x - BALL_RAD <= PLATE_WIDTH + 10) and ((ball_pos_y - BALL_RAD < x_offset_left + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_left))) then
                         if (collision_lock_left = '0') then
                             ball_mvmt_vector(1) <= '1';
@@ -177,6 +147,7 @@ ball_movement : process(CLK_25_175MHz)
                             collision_lock_left <= '1';     -- Lock setzen, dass nur ein Bounce gezählt wird
                         end if;
                     end if;
+                    -- Abfrage der horizontalen Seiten
                     if (((ball_pos_x - BALL_RAD <= 20) and (ball_pos_x + BALL_RAD >= 10)) and (((ball_pos_y + BALL_RAD <= x_offset_left + 1) and (ball_pos_y + BALL_RAD >= x_offset_left - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_left + PLATE_HEIGHT +1) and (ball_pos_y - BALL_RAD >= x_offset_left + PLATE_HEIGHT -1)))) then
                         if (ball_pos_y < x_offset_left + 35) then
                             ball_mvmt_vector(0) <= '0';
@@ -186,6 +157,7 @@ ball_movement : process(CLK_25_175MHz)
                     end if;
         
                     -- rechtes Padle
+                    -- Abfrage der vertikalen Seite
                     if ((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - PLATE_WIDTH - 10) and ((ball_pos_y - BALL_RAD < x_offset_right + PLATE_HEIGHT) and (ball_pos_y + BALL_RAD > x_offset_right))) then
                         if (collision_lock_right = '0') then
                             ball_mvmt_vector(1) <= '0';
@@ -193,7 +165,7 @@ ball_movement : process(CLK_25_175MHz)
                             collision_lock_right <= '1';
                         end if;
                     end if;
-                    
+                    -- Abfrage der horizontalen Seiten
                     if (((ball_pos_x + BALL_RAD >= SCREEN_WIDTH - 20) and (ball_pos_x - BALL_RAD <= SCREEN_WIDTH - 10)) and (((ball_pos_y + BALL_RAD <= x_offset_right + 1) and (ball_pos_y + BALL_RAD >= x_offset_right - 1)) or ((ball_pos_y - BALL_RAD <= x_offset_right + PLATE_HEIGHT + 1) and (ball_pos_y - BALL_RAD >= x_offset_right + PLATE_HEIGHT - 1)))) then
                         if (ball_pos_y < x_offset_right + 35) then
                             ball_mvmt_vector(0) <= '0';
