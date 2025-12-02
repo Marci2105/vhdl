@@ -1,36 +1,6 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 12.11.2025 21:21:35
--- Design Name: 
--- Module Name: Graphics - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity Graphics is
     Port ( Ball_x : in integer;
@@ -142,6 +112,8 @@ begin
         addra => rom_addr_player_2,
         douta => rom_data_player_2
     );
+
+-- Alternativer Anslatz statt Clock Wizard
 --    clk_divider_50:process(CLK_25_125MHz)
 --    begin
 --        if (CLK_25_125MHz'event and CLK_25_125MHz = '1') then
@@ -258,12 +230,14 @@ begin
     begin    
              if (CLK_25_175MHz'event and CLK_25_175MHz = '1') then
                if videoOn = '1' then
-               
+
+                   -- Darstellung des Welcom
                    if MenuSlct = "00" then
                         red_i   <= rom_data(11 downto 8);
                         green_i <= rom_data(7 downto 4);
                         blue_i  <= rom_data(3 downto 0);
-           
+
+                    -- Darstellung des Spiels
                     elsif MenuSlct = "10" then
                         -- Linkes Paddle
                         if (hPos >= 10 and hPos <= 20) and 
@@ -429,7 +403,8 @@ begin
                                                 blue_i <= "1111";
                                 end if;
                             end if;
-                        
+
+                    -- Darstellung des siegenden Spielers
                     elsif MenuSlct = "11" then
                         if Which_player_won = '1' then
                             red_i   <= rom_data_player_1(11 downto 8);
